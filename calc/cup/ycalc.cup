@@ -1,0 +1,188 @@
+/* ----------------------User code--------------------*/
+
+package src;
+   
+/* ------------Grammar symbol declarations----------- */
+   
+terminal                PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN, AT;
+terminal Double         NUMBER;
+non terminal Token      P;
+non terminal Token      E, T, F, A, B, C, D;
+ 
+/* ------------Grammar rules----------- */
+
+/* ----------Infix Notation---------- */
+P   ::= E:e 
+        {:  System.out.println();
+            System.out.println("Evaluation result = " + e.value); 
+            System.out.println("Prefix Exp = " + e.prefix);
+            System.out.println("Posfix Exp = " + e.postfix);
+            System.out.println("Infix Exp = " + e.infix);
+            RESULT = e;
+        :};
+   
+E   ::= E:e MINUS T:t
+        {:
+          RESULT = new Token(e.value - t.value, "- " +e.prefix+ " " +t.prefix,
+          e.postfix+" "+t.postfix+ " -","");    
+        :}
+        |E:e PLUS T:t
+        {:
+          RESULT = new Token(e.value + t.value, "+ " +e.prefix+ " " +t.prefix,
+          e.postfix+" "+t.postfix+ " +","");  
+        :}
+        
+        /* ----------Unary Operations------------ */
+        |E:e PLUS PLUS T:t
+        {:
+          RESULT = new Token(e.value + t.value, 
+          "+ " +e.prefix+ " " +t.prefix,
+          e.postfix+" "+t.postfix+ " +","");  
+        :}
+        |E:e MINUS MINUS T:t
+        {:
+          RESULT = new Token(e.value + t.value,
+         "+ " +e.prefix+ " " +t.prefix,
+          e.postfix+" "+t.postfix+ " +","");  
+        :}
+        |E:e PLUS MINUS T:t
+        {:
+          RESULT = new Token(e.value - t.value, "- " +e.prefix+ " " +t.prefix,
+          e.postfix+" "+t.postfix+ " -","");    
+        :}
+        |E:e MINUS PLUS T:t
+        {:
+          RESULT = new Token(e.value - t.value, "- " +e.prefix+ " " +t.prefix,
+          e.postfix+" "+t.postfix+ " -","");    
+        :}
+        |T:t
+        {:
+            RESULT = t;
+        :};
+
+T   ::= T:t DIVIDE F:f
+        {:
+          RESULT = new Token(t.value / f.value, "(/ " +t.prefix+ " " +f.prefix+ ")",
+          "("+t.postfix+" "+f.postfix+ " /)","");
+        :}
+        |T:t TIMES F:f
+        {:
+          RESULT = new Token(t.value * f.value, "(* " +t.prefix+ " " +f.prefix+")",
+          "("+t.postfix+" "+f.postfix+ " *)","");
+        :}
+        |T:t AT F:f
+        {:
+           
+          RESULT = new Token((2*t.value +(t.value - f.value)), "@ " +t.prefix+ " " +f.prefix,t.postfix+" "+f.postfix+ " @","");
+        :}
+        |F:f
+        {:
+            RESULT = f;
+        :};
+
+F   ::=  LPAREN E:e RPAREN
+        {:
+            RESULT = e;
+        :} 
+        | NUMBER:n
+        {:
+            RESULT = new Token(n, n.toString(), n.toString(), "");
+        :};
+
+/* --------Postfix Notation----------- */
+P   ::= A:a
+        {:
+            System.out.println("Evaluation result = " + a.value); 
+            System.out.println("Prefix Exp = " + a.prefix);
+            System.out.println("Infix Exp = " + a.infix);
+            RESULT = a;
+        :};
+
+A   ::= B:b1 B:b2 PLUS 
+        {:  
+            RESULT = new Token(b1.value+b2.value, 
+                                "+ "+b1.prefix+" "+b2.prefix,""
+                                ,"( "+ b1.infix+ " + "+b2.infix+" )");
+        :}
+    | B:b1 B:b2 MINUS
+        {:
+            RESULT = new Token(b1.value-b2.value,
+                                 "- "+b1.prefix+" "+b2.prefix,""
+                                ,"( "+ b1.infix+ " - "+b2.infix + " )");
+        :}
+    | B:b1 B:b2 TIMES
+        {:
+            RESULT = new Token(b1.value*b2.value,
+                                 "*( "+b1.prefix+" "+b2.prefix+")",""
+                                ,"( "+ b1.infix+ " * "+b2.infix+ " )");
+        :}
+   | B:b1 B:b2 DIVIDE
+        {:
+            RESULT = new Token(b1.value/b2.value,
+                                 "/ ("+b1.prefix+" "+b2.prefix+")",""
+                                ,"( "+ b1.infix+ " / "+b2.infix+ " )");
+        :}
+    |   LPAREN A:a RPAREN
+        {:
+            RESULT = a;
+        :};
+B   ::= A:a
+        {:
+          RESULT = a;
+        :};
+        
+B   ::= NUMBER:n
+        {:  
+          RESULT = new Token(n, n.toString(),""
+                                , n.toString());
+        :};
+
+/* ----------Prefix Notation----------- */
+P   ::= C:c
+        {:
+            System.out.println("Evaluation result = " + c.value); 
+            System.out.println("Postfix Exp = " + c.postfix);
+            System.out.println("Infix Exp = " + c.infix);
+            RESULT = c;
+        :};
+
+C   ::= PLUS D:d1 D:d2 
+        {:  
+            RESULT = new Token(d1.value+d2.value,
+                                 "",d1.postfix+" "+d2.postfix+ " +"
+                                ,"( "+ d1.infix+ " + "+d2.infix+ " )");
+        :}
+        | MINUS D:d1 D:d2 
+        {:
+            RESULT = new Token(d1.value-d2.value,
+                                 "",d1.postfix+" "+d2.postfix+ " -"
+                                ,"( "+ d1.infix+ " - "+d2.infix+ " )");
+        :}
+        | TIMES D:d1 D:d2
+        {:
+            RESULT = new Token(d1.value*d2.value,
+                                 "","("+d1.postfix+" "+d2.postfix+ ") *"
+                                ,"( "+ d1.infix+ " * "+d2.infix+ " )");
+        :}
+        | DIVIDE D:d1 D:d2
+        {:
+            RESULT = new Token(d1.value/d2.value,
+                                 "","("+d1.postfix+" "+d2.postfix+ ") /"
+                                ,"( "+ d1.infix+ " / "+d2.infix+ " )");
+        :}
+    |    LPAREN C:c RPAREN
+        {:
+            RESULT = c;
+        :};
+
+D   ::= C:c
+        {:
+          RESULT = c;
+        :};
+
+D   ::=  NUMBER:n
+        {:  
+          RESULT = new Token(n, "",n.toString()
+                                , n.toString());
+        :};
+        
