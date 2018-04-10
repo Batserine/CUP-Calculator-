@@ -1,5 +1,5 @@
 /*
- * The GUI for calculator is defined an
+ * The GUI for calculator is defined in this file.
  */
 package src;
 
